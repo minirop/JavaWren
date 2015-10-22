@@ -175,22 +175,6 @@ public class Wren {
 		}
 	}
 
-	public static void dump(ByteBuffer bytecode) {
-		int toSkip = 0;
-		for (int i = 0; i < bytecode.count(); i++) {
-			int x = bytecode.get(i);
-			if (toSkip == 0) {
-				System.out.print(Code.fromByte((byte)x) + " ");
-				toSkip = Wren.getNumArguments(bytecode, null, i);
-			} else {
-				if (x < 0) x += 256;
-				System.out.print(x + " ");
-				toSkip--;
-			}
-		}
-		System.out.println();
-	}
-
 	public static boolean RETURN(Value[] stack, int stackStart, Value value) {
 		stack[stackStart] = value;
 		return true;

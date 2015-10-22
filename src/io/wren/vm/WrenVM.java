@@ -186,20 +186,27 @@ public class WrenVM {
 	private int READ_SHORT() {
 		return (READ_BYTE() << 8 | READ_BYTE());
 	}
-
-	private WrenInterpretResult runInterpreter(ObjFiber fiber) {
-		WrenVM.fiber = fiber;
-
-		Code instruction;
-		int index;
-
-		// load frame
+	
+	private void LOAD_FRAME() {
 		frame = fiber.frames.get(fiber.frames.size() - 1);
 		stackStart = frame.stackStart;
 		ip = frame.ip;
 		fn = frame.getFn();
 		closure = frame.maybeClosure();
 		bytecode = fn.bytecode;
+	}
+	
+	private void STORE_FRAME() {
+		frame.ip = ip;
+	}
+
+	private WrenInterpretResult runInterpreter(ObjFiber fiber) {
+		WrenVM.fiber = fiber;
+
+		Code instruction;
+		int index;
+		
+		LOAD_FRAME();
 
 		int offset;
 		Value condition;
@@ -281,18 +288,11 @@ public class WrenVM {
 					Method method = classObj.methods.get(symbol);
 					switch (method.type) {
 						case BLOCK: {
-							// store frame
-							frame.ip = ip;
+							STORE_FRAME();
 
 							fiber.appendCallFrame(method.getFn(), fiber.stackTop - numArgs);
 
-							// load frame
-							frame = fiber.frames.get(fiber.frames.size() - 1);
-							stackStart = frame.stackStart;
-							ip = frame.ip;
-							fn = frame.getFn();
-							closure = frame.maybeClosure();
-							bytecode = fn.bytecode;
+							LOAD_FRAME();
 							break;
 						}
 						case FOREIGN:
@@ -300,41 +300,26 @@ public class WrenVM {
 							break;
 						case PRIMITIVE:
 							if (callPrimitive(method, numArgs)) {
-								fiber.stackTop -= numArgs - 1;
+								fiber.stackTop -= (numArgs - 1);
 							} else {
-								System.out.println("switch fiber");
-								// store frame
-								frame.ip = ip;
+								STORE_FRAME();
 
 								fiber = WrenVM.fiber;
 								if (fiber == null) return WrenInterpretResult.RESULT_SUCCESS;
 
 								if (fiber.error != null) RUNTIME_ERROR();
 
-								// load frame
-								frame = fiber.frames.get(fiber.frames.size() - 1);
-								stackStart = frame.stackStart;
-								ip = frame.ip;
-								fn = frame.getFn();
-								closure = frame.maybeClosure();
-								bytecode = fn.bytecode;
+								LOAD_FRAME();
 							}
 							break;
 						case CALL:
-							if (!checkArity(fiber.stack[stackStart], numArgs)) RUNTIME_ERROR();
+							if (!checkArity(fiber.stack[argsStart], numArgs)) RUNTIME_ERROR();
 
-							// store frame
-							frame.ip = ip;
+							STORE_FRAME();
 
-							fiber.appendCallFrame(fiber.stack[stackStart].asObj(), fiber.stackTop - numArgs);
+							fiber.appendCallFrame(fiber.stack[argsStart].asObj(), fiber.stackTop - numArgs);
 
-							// load frame
-							frame = fiber.frames.get(fiber.frames.size() - 1);
-							stackStart = frame.stackStart;
-							ip = frame.ip;
-							fn = frame.getFn();
-							closure = frame.maybeClosure();
-							bytecode = fn.bytecode;
+							LOAD_FRAME();
 							break;
 						case NONE:
 						default:
@@ -516,20 +501,8 @@ public class WrenVM {
 		}
 	}
 
-	@SuppressWarnings("unused")
-	private void dumpStack(Value[] stack, int numArgs) {
-		System.out.println("======= STACK =======");
-		for (int i = 0; i < stackStart + numArgs; i++) {
-			System.out.print(i + ") " + stack[i]);
-			if (stackStart == i) System.out.print(" <- s");
-			System.out.println();
-		}
-		System.out.println("=====================");
-	}
-
 	private boolean checkArity(Value value, int numArgs) {
 		ObjFn fn = value.asFnOrClosure();
-
 		if (numArgs - 1 >= fn.arity) return true;
 
 		fiber.error = new Value("Function expects more arguments.");

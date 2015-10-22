@@ -370,7 +370,7 @@ public class Compiler {
 
 			local--;
 		}
-
+		
 		return numLocals - local - 1;
 	}
 
@@ -651,7 +651,7 @@ public class Compiler {
 			if (numUpvalues == 0) {
 				parent.emitShortArg(Code.CONSTANT, constant);
 			} else {
-				emitShortArg(Code.CLOSURE, constant);
+				parent.emitShortArg(Code.CLOSURE, constant);
 
 				for (int i = 0; i < numUpvalues; i++) {
 					parent.emit(upvalues[i].isLocal ? 1 : 0);

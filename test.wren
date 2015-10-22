@@ -2,7 +2,7 @@ System.print("Hello, world!")
 
 class Wren {
   flyTo(city) {
-    System.print("Flying to " + city)
+    System.print("Flying to ", city)
   }
 }
 
@@ -10,7 +10,4 @@ var adjectives = Fiber.new {
   ["small", "clean", "fast"].each {|word| Fiber.yield(word) }
 }
 
-while (!adjectives.isDone) {
-	var x = adjectives.call()
-	System.print(x)
-}
+while (!adjectives.isDone) System.print(adjectives.call())

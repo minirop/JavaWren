@@ -45,7 +45,6 @@ public class WrenObject {
 	}
 	
 	public static boolean to_string(Value[] stack, int stackStart, int numArgs) {
-		System.out.println("Object.toString");
 		Obj obj = stack[stackStart].asObj();
 		String string = obj.classObj.toString();
 		return Wren.RETURN(stack, stackStart, string);
