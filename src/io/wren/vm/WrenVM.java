@@ -4,6 +4,8 @@ import io.wren.enums.Code;
 import io.wren.enums.MethodType;
 import io.wren.enums.TokenType;
 import io.wren.enums.WrenInterpretResult;
+import io.wren.libs.Core;
+import io.wren.libs.Meta;
 import io.wren.libs.WrenBool;
 import io.wren.libs.WrenClass;
 import io.wren.libs.WrenFiber;
@@ -20,7 +22,6 @@ import io.wren.utils.Buffer;
 import io.wren.utils.ByteBuffer;
 import io.wren.utils.SymbolTable;
 import io.wren.utils.UnreachableCodeException;
-import io.wren.utils.Wren;
 import io.wren.value.CallFrame;
 import io.wren.value.Method;
 import io.wren.value.ObjClass;
@@ -716,8 +717,11 @@ public class WrenVM {
 					int.class
 			}));
 
-			String source = Wren.loadFile("src/io/wren/libs/core.wren");
-			interpret("", source);
+			WrenInterpretResult ret = interpret("", Core.source);
+			if(ret != WrenInterpretResult.RESULT_SUCCESS) {
+				System.out.println("error compiling core.wren");
+				throw new RuntimeException("error compiling core.wren");
+			}
 
 			// bool
 			boolClass = findVariable(coreModule, "Bool").asClass();
@@ -1259,8 +1263,7 @@ public class WrenVM {
 	}
 
 	private void initializeMeta() {
-		String source = Wren.loadFile("src/io/wren/libs/meta.wren");
-		interpret("", source);
+		interpret("", Meta.source);
 
 		ObjModule coreModule = getCoreModule();
 
