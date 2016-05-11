@@ -1,6 +1,6 @@
 JavaWren
 ========
 
-* Open the project with eclipse
-* Export a runnable JAR
-* execute `java -jar <name>.jar <file>.wren`
+* Build project with `./gradlew installDist`
+* change directory to build/install/JavaWren/bin/
+* execute `./JavaWren <file>.wren`
