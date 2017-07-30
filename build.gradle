@@ -1,0 +1,12 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'io.wren.cli.Launcher'
+
+sourceSets {
+  main {
+    java {
+      srcDir 'src'
+    }
+  }
+}
